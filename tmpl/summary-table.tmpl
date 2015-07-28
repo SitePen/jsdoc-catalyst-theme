@@ -1,0 +1,38 @@
+<?js
+/* global properties:false, className:false, displayName:false */
+var self = this;
+?>
+<table class="summaryTable">
+	<thead>
+		<tr>
+			<th class="<?js= className ?>"><?js= displayName ?></th>
+			<th class="source">Defined by</th>
+		</tr>
+	</thead>
+	<tbody>
+		<?js properties.forEach(function (property) { ?>
+			<?js var icons = self.getIcons(property); ?>
+			<tr class="icons-<?js= icons.length ?> <?js= property.inherited ? 'inherited' : '' ?>">
+				<td class="<?js= className ?>">
+					<div class="name">
+						<?js=
+							icons +
+							self.linkto(property.inherits || property.longname, self.htmlsafe(property.accessorName || property.name)) +
+							(property.signature || '')
+						?>
+					</div>
+					<div class="description">
+						<?js= property.attribs + property.summary ?>
+					</div>
+				</td>
+				<td class="source">
+					<?js if (property.inherited && property.inherits) { ?>
+						<?js= self.linkto(property.inherits, self.htmlsafe(property.inherits.slice(0, property.inherits.indexOf('#')).replace(/^module:/, ''))) ?>
+					<?js } else { ?>
+						<?js= self.htmlsafe(property.memberof.replace(/^module:/, '')) ?>
+					<?js } ?>
+				</td>
+			</tr>
+		<?js }); ?>
+	</tbody>
+</table>

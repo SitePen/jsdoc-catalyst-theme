@@ -1,0 +1,16 @@
+<?js
+/* global doc:false, member:false, isModule:false */
+var self = this;
+
+var icons = self.getIcons(member);
+var className = isModule && doc.name === member.name ? 'active' : '';
+if (icons.length) {
+	className += ' icons-' + icons.length;
+	className = className.trim();
+}
+
+var displayName = icons.join('') + self.htmlsafe(member.accessorPretty || member.name);
+?>
+<li data-member-id="<?js= member.longname ?>" class="<?js= className.trim() ?>">
+	<?js= self.linkto(member.inherits || member.longname, displayName) ?>
+</li>

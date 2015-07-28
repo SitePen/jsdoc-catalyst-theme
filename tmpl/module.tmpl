@@ -1,0 +1,184 @@
+<?js
+/* global doc:false, sections:false */
+var self = this;
+
+function hasUninherited(section) {
+	if (!section) {
+		return false;
+	}
+
+	for (var key in section) {
+		var property = section[key];
+		if (!property.inherited && !property.inherits) {
+			return true;
+		}
+	}
+
+	return false;
+}
+?>
+<?js if (doc.kind === 'globalobj') { ?>
+	<h1 class="vh">Globals</h1>
+<?js } else { ?>
+	<div class="section overview" id="overview">
+		<div class="classInfo">
+			<h1 class="title header"><?js= self.htmlsafe(doc.longname.replace(/^module:/, '')) ?></h1>
+
+			<?js if (doc.requires && doc.requires.length) { ?>
+				<div class="dependencies">
+					<h2>Dependencies</h2>
+					<ul>
+						<?js doc.requires.forEach(function (dependency) { ?>
+							<li><?js= self.linkto(dependency) ?></li>
+						<?js }); ?>
+					</ul>
+				</div>
+			<?js } ?>
+
+			<?js if (doc.kind === 'class') { ?>
+				<div class="superclasses">
+					<h2>Inheritance</h2>
+					<ol>
+						<li><?js= self.htmlsafe(doc.longname.replace(/^module:/, '')) ?></li>
+						<?js doc.superclasses.forEach(function (parent) { ?>
+							<li><?js= self.linkto(parent) ?></li>
+						<?js }); ?>
+					</ol>
+				</div>
+				<?js if (doc.subclasses.length) { ?>
+					<div class="subclasses">
+						<h2>Subclasses</h2>
+						<ul>
+							<?js doc.subclasses.forEach(function (child) { ?>
+								<li class="child"><?js= self.linkto(child) ?></li>
+							<?js }); ?>
+						</ul>
+					</div>
+				<?js } ?>
+				<?js if (doc.mixes && doc.mixes.length) { ?>
+					<div class="mixins">
+						<h2>Mixins</h2>
+						<ul>
+							<?js doc.mixes.forEach(function (mixin) { ?>
+								<li><?js= self.linkto(mixin) ?></li>
+							<?js }); ?>
+						</ul>
+					</div>
+				<?js } ?>
+			<?js } ?>
+		</div>
+
+		<?js= self.partial('property.tmpl', { member: doc, level: 2 }) ?>
+
+		<?js if (!doc.isEnum && sections.properties) { ?>
+			<div class="summary properties">
+				<h2 class="header"><span class="inherited">All</span> Properties</h2>
+				<?js= self.partial('summary-table.tmpl', {
+					className: 'property',
+					displayName: 'Property',
+					properties: sections.properties
+				}) ?>
+			</div>
+		<?js } ?>
+
+		<?js if (sections.methods) { ?>
+			<div class="summary methods">
+				<h2 class="header"><span class="inherited">All</span> Methods</h2>
+				<?js= self.partial('summary-table.tmpl', {
+					className: 'method',
+					displayName: 'Method',
+					properties: sections.methods
+				}) ?>
+			</div>
+		<?js } ?>
+
+		<?js if (sections.events) { ?>
+			<div class="summary events">
+				<h2 class="header"><span class="inherited">All</span> Events</h2>
+				<?js= self.partial('summary-table.tmpl', {
+					className: 'event',
+					displayName: 'Event',
+					properties: sections.events
+				}) ?>
+			</div>
+		<?js } ?>
+	</div>
+<?js } ?>
+
+<?js if (!doc.isEnum && hasUninherited(sections.properties)) { ?>
+	<div class="section properties" id="properties">
+		<h2 class="header">Properties</h2>
+		<div class="subsection">
+			<?js sections.properties.forEach(function (property) {
+				if (property.inherited && property.inherits) {
+					return;
+				}
+			?>
+				<?js= self.partial('property.tmpl', { member: property, level: 3, forceSignature: true }) ?>
+			<?js }); ?>
+		</div>
+	</div>
+<?js } ?>
+
+<?js if (hasUninherited(sections.methods)) { ?>
+	<div class="section methods" id="methods">
+		<h2 class="header">Methods</h2>
+		<div class="subsection">
+			<?js sections.methods.forEach(function (method) {
+				if (method.inherited && method.inherits) {
+					return;
+				}
+			?>
+				<?js= self.partial('property.tmpl', { member: method, level: 3 }) ?>
+			<?js }); ?>
+		</div>
+	</div>
+<?js } ?>
+
+<?js if (hasUninherited(sections.events)) { ?>
+	<div class="section events" id="events">
+		<h2 class="header">Events</h2>
+		<div class="subsection">
+			<?js sections.events.forEach(function (event) {
+				if (event.inherited && event.inherits) {
+					return;
+				}
+			?>
+				<?js= self.partial('property.tmpl', { member: event, level: 3 }) ?>
+			<?js }); ?>
+		</div>
+	</div>
+<?js } ?>
+
+<?js if (sections.typedefs) { ?>
+	<div class="section typedefs" id="typedefs">
+		<h2 class="header">Type Definitions</h2>
+		<div class="subsection">
+			<?js sections.typedefs.forEach(function (typedef) {
+				print(self.partial('property.tmpl', { member: typedef, level: 3, forceSignature: true }));
+			}); ?>
+		</div>
+	</div>
+<?js } ?>
+
+<?js if (sections.classes) { ?>
+	<div class="section classes">
+		<h2 class="header">Classes</h2>
+		<?js= self.partial('summary-table.tmpl', {
+			className: 'class',
+			displayName: 'Class',
+			properties: sections.classes
+		}) ?>
+	</div>
+<?js } ?>
+
+ <?js if (sections.mixins) { ?>
+	<div class="section mixins">
+		<h2 class="header">Mixins</h2>
+		<?js= self.partial('summary-table.tmpl', {
+			className: 'mixin',
+			displayName: 'Mixin',
+			properties: sections.mixins
+		}) ?>
+	</div>
+<?js } ?>

@@ -1,0 +1,44 @@
+<?js
+/* global doc:false, sections:false, modules:false */
+var self = this;
+?>
+<nav class="mainMenu">
+	<?js if (modules) { ?>
+		<div class="modulesContainer">
+			<h2 class="subsection-title modules">Modules</h2>
+			<ul class="modules">
+				<?js modules.forEach(function (module) {
+					print(self.partial('nav-item.tmpl', {
+						doc: doc,
+						member: module,
+						isModule: true
+					}));
+				}); ?>
+				<li<?js= doc.kind === 'globalobj' ? ' class="active"' : '' ?>><a href="global.html">Globals</a></li>
+			</ul>
+		</div>
+	<?js }
+	for (var sectionType in sections) {
+		var section = sections[sectionType];
+		var sectionName = sectionType.charAt(0).toUpperCase() + sectionType.slice(1);
+
+		if (!section || !section.length) {
+			continue;
+		}
+
+		if (sectionType === 'typedefs') {
+			sectionName = 'Type Defintions';
+		}
+	?>
+		<h2 class="subsection-title <?js= sectionType ?>"><a href="#<?js= sectionType ?>"><?js= sectionName ?></a></h2>
+		<ul class="<?js= sectionType ?>">
+			<?js section.forEach(function (member) {
+				print(self.partial('nav-item.tmpl', {
+					doc: doc,
+					member: member,
+					isModule: false
+				}));
+			}); ?>
+		</ul>
+	<?js } ?>
+</nav>

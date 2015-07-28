@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title><?js= env.conf.projectName ?> docs: <?js= title ?></title>
+	<link rel="stylesheet" href="styles/catalyst.css">
+</head>
+<body>
+	<h1 class="mainHeader"><a href="index.html" class="projectName">
+		<?js if (env.conf.projectLogo) { ?>
+			<img src="<?js= this.htmlsafe(env.conf.projectLogo) ?>" class="projectLogo"
+				alt="<?js= this.htmlsafe(env.conf.projectName) ?>" title="<?js= this.htmlsafe(env.conf.projectName) ?>">
+		<?js } else { ?>
+			<?js= this.htmlsafe(env.conf.projectName) ?>
+		<?js } ?>
+	</a></h1>
+	<?js= content ?>
+
+	<script src="scripts/prettify/prettify.js"></script>
+	<script src="scripts/prettify/lang-css.js"></script>
+	<script>prettyPrint();</script>
+	<script src="scripts/nav.js"></script>
+</body>
+</html>

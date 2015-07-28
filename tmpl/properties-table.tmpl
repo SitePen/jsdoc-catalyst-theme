@@ -1,0 +1,108 @@
+<?js
+	/* global properties:false, className:false */
+
+	// properties may be parameters or properties
+	var self = this;
+	properties = Object.create(properties);
+	properties.hasAttributes = false;
+	properties.hasDefault = false;
+	properties.hasName = false;
+	properties.hasDescription = false;
+
+	/* sort sub-properties under their parent properties (like opts.classname) */
+	var parent = null;
+	properties.forEach(function (property, index) {
+		if (!property) {
+			return;
+		}
+
+		if (parent && property.name && property.name.indexOf(parent.name + '.') === 0) {
+			property.name = property.name.slice(parent.name.length + 1);
+			parent.subProperties = parent.subProperties || [];
+			parent.subProperties.push(property);
+			properties[index] = null;
+		}
+		else {
+			parent = property;
+
+			if (property.optional || property.nullable || property.variable) {
+				properties.hasAttributes = true;
+			}
+
+			if (property.name) {
+				properties.hasName = true;
+			}
+
+			if (property.defaultvalue !== undefined) {
+				properties.hasDefault = true;
+			}
+
+			if (property.description) {
+				properties.hasDescription = true;
+			}
+		}
+	});
+?>
+
+<table class="<?js= className ?>">
+	<thead>
+		<tr>
+			<?js if (properties.hasName) {?><th class="name">Name</th><?js } ?>
+			<th class="type">Type</th>
+			<?js if (properties.hasAttributes) { ?><th class="attributes">Attributes</th><?js } ?>
+			<?js if (properties.hasDefault) { ?><th class="default">Default</th><?js } ?>
+			<?js if (properties.hasDescription) { ?><th class="table-description">Description</th><?js } ?>
+		</tr>
+	</thead>
+	<tbody>
+		<?js properties.forEach(function (property) {
+			if (!property) {
+				return;
+			}
+		?>
+			<tr>
+				<?js if (properties.hasName) { ?>
+					<td class="name"><code><?js= property.name ?></code></td>
+				<?js } ?>
+
+				<td class="type">
+					<?js if (property.type && property.type.names) { ?>
+						<?js= self.formatTypeList(property.type.names) ?>
+					<?js } ?>
+				</td>
+
+				<?js /* TODO: This UX sucks, put this information somewhere else */ ?>
+				<?js if (properties.hasAttributes) { ?>
+					<td class="attributes"><?js
+						var attributes = [];
+						property.optional && attributes.push('optional');
+						property.nullable && attributes.push('nullable');
+						property.variable && attributes.push('repeatable');
+						print(attributes.join(', '));
+					?></td>
+				<?js } ?>
+
+				<?js if (properties.hasDefault) { ?>
+					<td class="default">
+						<?js if (property.defaultvalue !== undefined) { ?>
+							<?js= self.htmlsafe(property.defaultvalue) ?>
+						<?js } ?>
+					</td>
+				<?js } ?>
+
+				<?js if (properties.hasDescription) { ?>
+					<td class="table-description">
+						<?js= property.description ?>
+						<?js if (property.subProperties) { ?>
+							<h3>Properties</h3>
+							<?js= self.partial('properties-table.tmpl', {
+								className: className,
+								properties: property.subProperties
+							}) ?>
+						<?js } ?>
+					</td>
+				<?js } ?>
+			</tr>
+		<?js }); ?>
+	</tbody>
+</table>

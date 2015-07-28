@@ -1,0 +1,213 @@
+<?js
+	var self = this;
+	var member = obj.member;
+	var showSignature = obj.forceSignature || (member.kind in { 'class': 1, 'function': 1, 'event': 1 });
+	var level = obj.level;
+
+	function hasDescription(returns) {
+		return returns && returns.some(function (ret) {
+			return Boolean(ret.description);
+		});
+	}
+
+	// TODO: Figure out WTF this is actually doing
+	var sep = '';
+	var hasTypes = false;
+
+	if (member.kind === 'event' && member.type && member.type.names) {
+		hasTypes = true;
+		sep = ':';
+	}
+?>
+<div class="<?js= self.getMemberCssClass(member) ?>" id="<?js= member.id ?>">
+	<?js if (showSignature) { ?>
+		<h<?js= level ?> class="memberName">
+			<?js=
+				member.attribs +
+				(member.kind === 'class' ? 'new ' : '') +
+				(member.accessorName || member.name) + sep +
+				(member.kind !== 'event' && member.signature ? member.signature : '')
+			?>
+			<?js if (hasTypes) { ?>
+				<?js= self.formatTypeList(member.type.names) ?>
+			<?js } ?>
+		</h<?js= level ?>>
+	<?js } ?>
+
+	<div class="memberInfo">
+		<div class="versionInfo">
+			<?js if (member.version) { ?>
+				<div class="tag tag-version">
+					<h<?js= level + 1 ?> class="name">Version</h<?js= level + 1 ?>>
+					<div class="value"><?js= member.version ?></div>
+				</div>
+			<?js } ?>
+
+			<?js if (member.since) { ?>
+				<div class="tag tag-since">
+					<h<?js= level + 1 ?> class="name">Since</h<?js= level + 1 ?>>
+					<div class="value"><?js= member.since ?></div>
+				</div>
+			<?js } ?>
+		</div>
+
+		<?js if (member.deprecated) { ?>
+			<div class="tag scalar tag-deprecated<?= member.deprecated === true ? ' bool-yes' : '' ?>">
+				<h<?js= level + 1 ?> class="name">Deprecated</h<?js= level + 1 ?>>
+				<div class="value"><?= member.deprecated === true ? 'Yes' : member.deprecated ?></div>
+			</div>
+		<?js } ?>
+
+		<?js if (member.description) { ?>
+			<div class="description"><?js= member.description ?></div>
+		<?js } ?>
+
+		<!-- object property -->
+			<?js if (member.properties && member.properties.length) { ?>
+				<div class="tag table tag-properties">
+					<h<?js= level + 1 ?> class="name">Properties</h<?js= level + 1 ?>>
+					<?js= this.partial('properties-table.tmpl', { className: 'properties value', properties: member.properties }) ?>
+				</div>
+			<?js } ?>
+		<!-- /object property -->
+
+		<?js if (member.defaultvalue !== undefined) { ?>
+			<div class="tag scalar tag-default">
+				<h<?js= level + 1 ?> class="name">Defaults to</h<?js= level + 1 ?>>
+				<div class="value">
+					<?js if (member.defaultvaluetype === 'object' || member.defaultvaluetype === 'array') { ?>
+						<pre class="prettyprint"><code><?js= self.htmlsafe(member.defaultvalue) ?></code></pre>
+					<?js } else if (member.type && member.type.names && member.type.names[0] === 'string') { ?>
+						<code>'<?js= self.htmlsafe(member.defaultvalue.replace(/'/g, '\\\'')) ?>'</code>
+					<?js } else { ?>
+						<code><?js= self.htmlsafe(member.defaultvalue) ?></code>
+					<?js } ?>
+				</div>
+			</div>
+		<?js } ?>
+
+		<!-- function -->
+			<?js if (member.params && member.params.length) { ?>
+				<div class="tag table tag-parameters">
+					<h<?js= level + 1 ?> class="name">Parameters</h<?js= level + 1 ?>>
+					<?js= self.partial('properties-table.tmpl', { className: 'parameters value', properties: member.params }) ?>
+				</div>
+			<?js } ?>
+
+			<?js if (hasDescription(member.returns)) { ?>
+				<div class="tag list tag-returns">
+					<h<?js= level + 1 ?> class="name">Returns</h<?js= level + 1 ?>>
+					<ul class="value">
+						<?js member.returns.forEach(function (ret) {
+							if (!ret.description) {
+								return;
+							}
+						?>
+							<li><?js= ret.description ?></li>
+						<?js }); ?>
+					</ul>
+				</div>
+			<?js } ?>
+
+			<?js if (member.exceptions && member.exceptions.length) { ?>
+				<div class="tag list tag-throws">
+					<h<?js= level + 1 ?> class="name">Throws</h<?js= level + 1 ?>>
+					<ul class="value">
+						<?js member.exceptions.forEach(function (throws) { ?>
+							<li>
+								<?js if (throws.type && throws.type.names) { ?>
+									<span class="data-type"><?js= self.formatTypeList(throws.type.names) ?></span>
+								<?js } ?>
+								<?js= throws.description ?>
+							</li>
+						<?js }); ?>
+					</ul>
+				</div>
+			<?js } ?>
+
+			<?js if (member.fires && member.fires.length) { ?>
+				<div class="tag list tag-fires">
+					<h<?js= level + 1 ?> class="name">Fires</h<?js= level + 1 ?>>
+					<ul class="value">
+						<?js member.fires.forEach(function (event) { ?>
+							<li><?js= self.linkto(event) ?></li>
+						<?js }); ?>
+					</ul>
+				</div>
+			<?js } ?>
+
+			<?js /* TODO: These are not documented in the jsdoc tag list */ ?>
+			<?js if (member.listens && member.listens.length) { ?>
+				<div class="tag list tag-listens">
+					<h<?js= level + 1 ?> class="name">Listens to</h<?js= level + 1 ?>>
+					<ul class="value">
+						<?js member.listens.forEach(function (event) { ?>
+							<li><?js= self.linkto(event) ?></li>
+						<?js }); ?>
+					</ul>
+				</div>
+			<?js } ?>
+
+			<?js /* TODO: These are not documented in the jsdoc tag list */ ?>
+			<?js if (member.listeners && member.listeners.length) { ?>
+				<div class="tag list tag-listeners">
+					<h<?js= level + 1 ?> class="name">Listeners</h<?js= level + 1 ?>>
+					<ul class="value">
+						<?js member.listeners.forEach(function (listener) { ?>
+							<li><?js= self.linkto(listener) ?></li>
+						<?js }); ?>
+					</ul>
+				</div>
+			<?js } ?>
+		<!-- /function -->
+
+		<!-- education -->
+			<?js if (member.see && member.see.length) { ?>
+				<div class="tag list tag-see">
+					<h<?js= level + 1 ?> class="name">See</h<?js= level + 1 ?>>
+					<ul class="value">
+						<?js member.see.forEach(function (see) { ?>
+							<li><?js= self.linkto(see) ?></li>
+						<?js }); ?>
+					</ul>
+				</div>
+			<?js } ?>
+
+			<?js if (member.examples && member.examples.length) { ?>
+				<div class="tag tag-examples">
+					<h<?js= level + 1 ?> class="name">Example<?js= member.examples.length > 1 ? 's' : '' ?></h<?js= level + 1 ?>>
+					<?js member.examples.forEach(function (example) { ?>
+						<div class="value example">
+							<?js if (example.caption) { ?>
+								<p class="code-caption"><?js= example.caption ?></p>
+							<?js } ?>
+							<pre class="prettyprint"><code><?js= self.htmlsafe(example.code) ?></code></pre>
+						</div>
+					<?js }); ?>
+				</div>
+			<?js } ?>
+
+			<?js /* TODO: This is broken because some stuff was deleted from publish.js */ ?>
+			<?js if (member.tutorials && member.tutorials.length) { ?>
+				<div class="tag list tag-tutorial">
+					<h<?js= level + 1 ?> class="name">Tutorials</h<?js= level + 1 ?>>
+					<ul class="value">
+						<?js member.tutorials.forEach(function (tutorial) { ?>
+							<li><?js= self.tutoriallink(tutorial) ?></li>
+						<?js }); ?>
+					</ul>
+				</div>
+			<?js } ?>
+		<!-- /education -->
+
+		<?js if (member.meta && self.outputSourceFiles) { ?>
+			<div class="tag scalar tag-source">
+				<h<?js= level + 1 ?> class="name">Source</h<?js= level + 1 ?>>
+				<div class="value">
+					<?js= self.linkto(member.meta.shortpath) ?>,
+					<?js= self.linkto(member.meta.shortpath, 'line ' + member.meta.lineno, null, 'line' + member.meta.lineno) ?>
+				</div>
+			</div>
+		<?js } ?>
+	</div>
+</div>

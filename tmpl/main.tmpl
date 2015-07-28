@@ -1,0 +1,54 @@
+<?js
+/* global doc:false, modules:false, title:false */
+var self = this;
+var sections = null;
+
+function find(doc, kind) {
+	var criteria = { kind: kind, memberof: doc.kind === 'globalobj' ? { isUndefined: true } : doc.longname };
+
+	if (doc.kind === 'globalobj') {
+		criteria.longname = { '!left': 'module:' };
+	}
+
+	return self.find(criteria);
+}
+
+// This information is used by the nav, when it exists, so cannot go into the if/else below
+if (doc.kind === 'module' || doc.kind === 'globalobj') {
+	var sections = {
+		properties: find(doc, 'member'),
+		methods: find(doc, 'function'),
+		events: find(doc, 'event'),
+		classes: find(doc, 'class'),
+		mixins: find(doc, 'mixin'),
+		namespaces: find(doc, 'namespace'),
+		typedefs: find(doc, 'typedef')
+	};
+
+	// Prevent empty sections showing up in the documentation
+	for (var key in sections) {
+		if (!sections[key].length) {
+			sections[key] = undefined;
+		}
+	}
+}
+
+print(self.partial('nav.tmpl', { doc: doc, sections: sections, modules: modules }));
+doc.longname && print('<div class="persistentTitle hidden"><a href="#overview">' + self.htmlsafe(doc.longname.replace(/^module:/, '')) + '</a></div>');
+
+print('<main class="mainContent doc-' + doc.kind + '">');
+
+if (doc.kind === 'index') {
+	print(self.partial('index.tmpl', doc));
+}
+else if (doc.kind === 'source') {
+	print(self.partial('source.tmpl', doc));
+}
+else if (doc.kind === 'module' || doc.kind === 'globalobj') {
+	// doc.module contains the value of a module; global object does not have such a thing
+	print(self.partial('module.tmpl', { doc: doc.module || doc, sections: sections }));
+}
+
+print('</main>');
+
+?>
